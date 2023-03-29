@@ -29,7 +29,7 @@ namespace NorbitsChallenge.Dal
                 connection.Open();
                 using (var command = new SqlCommand {Connection = connection, CommandType = CommandType.Text})
                 {
-                    command.CommandText = "select * from settings where setting = 'companyname'";
+                    command.CommandText = "select * from Settings where setting = 'companyname'";
 
                     using (var reader = command.ExecuteReader())
                     {

@@ -5,32 +5,200 @@
     ViewData["Title"] = "Home Page";
 }
 
-
-
 <h2>
     Vis biler for @Model.CompanyName
 </h2>
-<form asp-action="Index" data-ajax="true" data-ajax-method="POST" data-ajax-success="onSuccess">
-    <input type="hidden" name="companyId" value="@Model.CompanyId" />
-    <input type="text" name="licensePlate" />
-    <input type="submit" value="Søk" />
-</form>
 
+<div class="searchResult">
+    <div class="form-inline" style="display: flex">
+        <form asp-action="FindCar" data-ajax="true" data-ajax-method="POST" data-ajax-success="onCarFound" class="form-inline">
+            <input type="hidden" name="companyId" value="@Model.CompanyId" />
+            <input id="serchField" class="form-control" type="text" name="licensePlate" placeholder="License plate" />
+            <button class="btn btn-default">Search</button>
+        </form>
 
-<div class="hidden" id="tireInfo">
-    <div>Denne bilen har <div id="tireCount" style="display: inline;"></div> dekk på dekkhotell</div>
+        <button class="btn btn-toolbar" onclick="showAddForm()" style="margin-left: 5px">Add new car</button>
+
+        <form asp-action="ShowAllCars" data-ajax="true" data-ajax-method="POST" data-ajax-success="onAllCarsShow">
+            <input type="hidden" name="companyId" value="@Model.CompanyId" />
+            <button class="btn btn-info" style="margin-left: 5px">Show all cars</button>
+        </form>
+
+    </div>
+
+    <div class="hidden" id="carInfo">
+        <div class="list-group">
+            <h4>Denne bilen har:</h4>
+            <ul class="list-group-item list-group-item-info">
+                <li>
+                    <span style="font-weight: 700">License plate: </span>
+                    <div id="licensePlateDivInfo" style="display: inline;"></div>
+                </li>
+                <li>
+                    <span style="font-weight: 700">Yire count: </span>
+                    <div id="tireCountDivInfo" style="display: inline;"></div>
+                </li>
+                <li>
+                    <span style="font-weight: 700">Model: </span>
+                    <div id="modelDivInfo" style="display: inline;"></div>
+                </li>
+                <li>
+                    <span style="font-weight: 700">Description: </span>
+                    <div id="descriptionDivInfo" style="display: inline;"></div>
+                </li>
+                <li>
+                    <span style="font-weight: 700">Brand: </span>
+                    <div id="brandDivInfo" style="display: inline;"></div>
+                </li>
+            </ul>
+        </div>
+        <div style="display: flex">
+            <button class="btn btn-success" onclick="showEditForm()" style="margin: 2px">Edit</button>
+            <form asp-action="DeleteCar" data-ajax="true" data-ajax-method="POST" data-ajax-success="onCarDeleted" data-ajax-failure="onCarDeletedError">
+                <input type="hidden" name="licensePlate" />
+                <input type="hidden" name="companyId" value="@Model.CompanyId" style="margin-top: 5px" class="form-control" />
+
+                <button class="btn btn-danger" style="margin: 2px">Delete</button>
+            </form>
+        </div>
+    </div>
+
+    <form asp-action="EditCar" data-ajax="true" data-ajax-method="POST" data-ajax-success="onCarEdit" data-ajax-failure="onCarEditError" id="editCarForm" class="hidden form-group" style="margin-top: 20px">
+        <label for="form-group" class="form-label">Edit car</label>
+
+        <input type="text" name="licensePlate" id="licensePlateEdit" class="form-control" style="margin-top: 5px" />
+        <input type="hidden" name="oldLicensePlate" id="oldLicensePlateEdit" />
+
+        <input type="number" name="TireCount" id="tireCountEdit" class="form-control" style="margin-top: 5px" />
+        <input type="text" name="Model" id="modelEdit" placeholder="Model" class="form-control" style="margin-top: 5px" />
+        <input type="text" name="Description" id="descriptionEdit" placeholder="Description" class="form-control" style="margin-top: 5px" />
+        <input type="text" name="Brand" id="brandEdit" placeholder="Brand" class="form-control" style="margin-top: 5px" />
+
+        <button id="submit" class="btn btn-info" style="margin-top: 5px">Submit</button>
+    </form>
+
 </div>
-    
-<hr/>
+
+<div class="addForm hidden" style="margin-top: 20px">
+    <label for="form-group" class="form-label">Add new car</label>
+
+    <form asp-action="AddCar" data-ajax="true" data-ajax-method="POST" data-ajax-success="onCarAdded" data-ajax-failure="onCarAddedError" class="form-group" style="max-width: 300px">
+        <input required type="text" name="licensePlate" placeholder="license Plate" style="margin-top: 5px" class="form-control" />
+        <input required type="number" name="TireCount" placeholder="Tire count" style="margin-top: 5px" class="form-control" />
+        <input type="text" name="Model" placeholder="Model" style="margin-top: 5px" class="form-control" />
+        <input type="text" name="Description" placeholder="Description" style="margin-top: 5px" class="form-control" />
+        <input type="text" name="Brand" placeholder="Brand" style="margin-top: 5px" class="form-control" />
+        <input type="hidden" name="companyId" value="@Model.CompanyId" style="margin-top: 5px" class="form-control" />
+        <button class="btn btn-info" onclick="onCarAdded" style="margin-top: 5px">Add</button>
+    </form>
+</div>
+
+<table id="allCarsTable" class="table table-bordered hidden" style="margin-top: 30px">
+    <thead>
+        <tr>
+            <th>License plate</th>
+            <th>Tire count</th>
+            <th>Model</th>
+            <th>Description</th>
+            <th>Brand</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<hr />
 <h4>Gå til <a asp-action="Index" asp-controller="Settings" asp-route-companyId="@Model.CompanyId">Innstillinger</a></h4>
 
 @section Scripts
-{
+    {
     <script type="text/javascript">
-        function onSuccess(data) {
-            var tireCount = data.tireCount;
-            $('#tireCount').text(tireCount);
-            $('#tireInfo').removeClass('hidden');
+
+        const carProperties = ["licensePlate", "tireCount", "model", "description", "brand"];
+        
+        function onCarFound(data) {
+            if(data) {
+                carProperties.forEach(function (property) {
+                    $('#' + property + 'DivInfo').text(data[property])
+                })
+                    $('#licensePlateDeleteInput').val(data.licensePlate);
+                    $('#carInfo').removeClass('hidden');
+
+            } else {
+                alert("Car does not exist");
+            }
+
+            $('#serchField').val('');
         }
+
+        function onAllCarsShow(data) {
+            if(data) {
+                var tbody = $('#allCarsTable tbody');
+
+                tbody.empty();
+                data.forEach(function (row) {
+                    var tr = $("<tr>");
+                    carProperties.forEach(function (property) {
+                        $("<td>").html(row[property]).appendTo(tr);
+                    });
+
+                    tr.appendTo(tbody);
+                });
+                $('#allCarsTable').removeClass('hidden');
+            } else {
+                alert("Sorry! There are no cars in the table");
+            }
+        }
+
+        function onCarEdit(data) {
+            var licensePlate = data.licensePlate;
+            alert("New car with license plate " + licensePlate + " was edited");
+            $('#editCarForm').addClass('hidden');
+        }
+
+        function onCarEditError () {
+            alert("This car wasn't edited");
+        }
+
+        function onCarAdded(data) {
+            var licensePlate = data.licensePlate;
+            alert("New car with license plate " + licensePlate + " was added");
+            $('.addForm').addClass('hidden');
+        }
+
+        function onCarAddedError () {
+            alert("This car already exists in data base");
+        }
+
+        function onCarDeleted(data) {
+            alert("Car was deleted");
+            $('#carInfo').addClass('hidden');
+            $('#allCarsTable').addClass('hidden');
+        }
+
+        function onCarDeletedError () {
+            alert("This car wasn't deleted");
+        }
+        
+        function showEditForm() {
+            $('#carInfo').addClass('hidden');
+            $('#editCarForm').removeClass('hidden');
+            $('#allCarsTable').addClass('hidden');
+            
+            var divs = $('ul.list-group-item div');
+            var inputs = $('#editCarForm input');
+
+            carProperties.forEach(function (property) {
+                var propertyValue = $('#' + property + 'DivInfo').text();
+                $('#' + property + 'Edit').val(propertyValue);
+            });
+            $('#oldLicensePlateEdit').val($('#licensePlateDivInfo').text());
+            $('#licensePlateDeleteInput').val(data.licensePlate);
+            $('#carInfo').removeClass('hidden');
+        }
+
+        function showAddForm() {
+            $('.addForm').removeClass('hidden');
+        }
+
     </script>
 }
