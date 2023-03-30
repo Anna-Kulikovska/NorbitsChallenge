@@ -28,14 +28,29 @@ namespace NorbitsChallenge.Controllers
         }
 
         [HttpPost]
+
+        /*        public JsonResult Index(int companyId, string licensePlate)
+                {
+                    var tireCount = new CarDb(_config).GetTireCount(companyId, licensePlate);
+
+                    var model = GetCompanyModel();
+                    model.TireCount = tireCount;
+
+                    return Json(model);
+
+                }*/
+
+/*        public JsonResult GetTireCount(int companyId, string licensePlate)
+        {
+
+            var tireCount = new CarDb(_config).GetTireCount(companyId, licensePlate);
+
+            return Json(tireCount);
+
+        }
+*/
         public JsonResult FindCar(int companyId, string licensePlate)
         {
-            /* var tireCount = new CarDb(_config).GetTireCount(companyId, licensePlate);
-
-             var model = GetCompanyModel();
-             model.TireCount = tireCount;
-
-             return Json(model);*/
 
             var carInfo = new CarDb(_config).GetCarInfo(companyId, licensePlate);
 
@@ -51,7 +66,6 @@ namespace NorbitsChallenge.Controllers
 
         public JsonResult AddCar(int companyId, string licensePlate, string model, string brand, string description, int tireCount)
         {
-
             try
             {
                 var isQuerySuccesfull = new CarDb(_config).AddCar(companyId, licensePlate, model, brand, description, tireCount);

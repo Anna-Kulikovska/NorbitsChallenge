@@ -13,7 +13,7 @@
     <div class="form-inline" style="display: flex">
         <form asp-action="FindCar" data-ajax="true" data-ajax-method="POST" data-ajax-success="onCarFound" class="form-inline">
             <input type="hidden" name="companyId" value="@Model.CompanyId" />
-            <input id="serchField" class="form-control" type="text" name="licensePlate" placeholder="License plate" />
+            <input required id="serchField" class="form-control" type="text" name="licensePlate" placeholder="License plate" />
             <button class="btn btn-default">Search</button>
         </form>
 
@@ -29,13 +29,13 @@
     <div class="hidden" id="carInfo">
         <div class="list-group">
             <h4>Denne bilen har:</h4>
-            <ul class="list-group-item list-group-item-info">
+            <ul class="list-group-item list-group-item-info" style="padding-left: 25px">
                 <li>
                     <span style="font-weight: 700">License plate: </span>
                     <div id="licensePlateDivInfo" style="display: inline;"></div>
                 </li>
                 <li>
-                    <span style="font-weight: 700">Yire count: </span>
+                    <span style="font-weight: 700">Tire count: </span>
                     <div id="tireCountDivInfo" style="display: inline;"></div>
                 </li>
                 <li>
@@ -55,8 +55,8 @@
         <div style="display: flex">
             <button class="btn btn-success" onclick="showEditForm()" style="margin: 2px">Edit</button>
             <form asp-action="DeleteCar" data-ajax="true" data-ajax-method="POST" data-ajax-success="onCarDeleted" data-ajax-failure="onCarDeletedError">
-                <input type="hidden" name="licensePlate" />
-                <input type="hidden" name="companyId" value="@Model.CompanyId" style="margin-top: 5px" class="form-control" />
+                <input id="licensePlateDeleteInput" type="hidden" name="licensePlate" />
+                <input type="hidden" name="companyId" value="@Model.CompanyId"/>
 
                 <button class="btn btn-danger" style="margin: 2px">Delete</button>
             </form>
@@ -88,23 +88,26 @@
         <input type="text" name="Model" placeholder="Model" style="margin-top: 5px" class="form-control" />
         <input type="text" name="Description" placeholder="Description" style="margin-top: 5px" class="form-control" />
         <input type="text" name="Brand" placeholder="Brand" style="margin-top: 5px" class="form-control" />
-        <input type="hidden" name="companyId" value="@Model.CompanyId" style="margin-top: 5px" class="form-control" />
-        <button class="btn btn-info" onclick="onCarAdded" style="margin-top: 5px">Add</button>
+        <input type="hidden" name="companyId" id="companyId" value="@Model.CompanyId" />
+        <button class="btn btn-info" style="margin-top: 5px">Add</button>
     </form>
 </div>
 
-<table id="allCarsTable" class="table table-bordered hidden" style="margin-top: 30px">
-    <thead>
-        <tr>
-            <th>License plate</th>
-            <th>Tire count</th>
-            <th>Model</th>
-            <th>Description</th>
-            <th>Brand</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+<div class="hidden" id="hiddenTable">
+    <table id="allCarsTable" class="table table-bordered" style="margin-top: 30px">
+        <thead>
+            <tr>
+                <th>License plate</th>
+                <th>Tire count</th>
+                <th>Model</th>
+                <th>Description</th>
+                <th>Brand</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <button class="btn btn-info" onclick="onAllCarsHidden()" style="margin-top: 5px">Hide the list</button>
+</div>
 
 <hr />
 <h4>Gå til <a asp-action="Index" asp-controller="Settings" asp-route-companyId="@Model.CompanyId">Innstillinger</a></h4>
@@ -118,7 +121,8 @@
         function onCarFound(data) {
             if(data) {
                 carProperties.forEach(function (property) {
-                    $('#' + property + 'DivInfo').text(data[property])
+                    $('#' + property + 'DivInfo').text('');
+                    $('#' + property + 'DivInfo').text(data[property]);
                 })
                     $('#licensePlateDeleteInput').val(data.licensePlate);
                     $('#carInfo').removeClass('hidden');
@@ -128,6 +132,7 @@
             }
 
             $('#serchField').val('');
+            $('.addForm').addClass('hidden');
         }
 
         function onAllCarsShow(data) {
@@ -143,47 +148,21 @@
 
                     tr.appendTo(tbody);
                 });
-                $('#allCarsTable').removeClass('hidden');
+                $('#hiddenTable').removeClass('hidden');
             } else {
                 alert("Sorry! There are no cars in the table");
             }
         }
 
-        function onCarEdit(data) {
-            var licensePlate = data.licensePlate;
-            alert("New car with license plate " + licensePlate + " was edited");
-            $('#editCarForm').addClass('hidden');
+        function onAllCarsHidden() {
+            $('#hiddenTable').addClass('hidden');
         }
 
-        function onCarEditError () {
-            alert("This car wasn't edited");
-        }
-
-        function onCarAdded(data) {
-            var licensePlate = data.licensePlate;
-            alert("New car with license plate " + licensePlate + " was added");
-            $('.addForm').addClass('hidden');
-        }
-
-        function onCarAddedError () {
-            alert("This car already exists in data base");
-        }
-
-        function onCarDeleted(data) {
-            alert("Car was deleted");
-            $('#carInfo').addClass('hidden');
-            $('#allCarsTable').addClass('hidden');
-        }
-
-        function onCarDeletedError () {
-            alert("This car wasn't deleted");
-        }
-        
         function showEditForm() {
             $('#carInfo').addClass('hidden');
             $('#editCarForm').removeClass('hidden');
-            $('#allCarsTable').addClass('hidden');
-            
+            $('#hiddenTable').addClass('hidden');
+
             var divs = $('ul.list-group-item div');
             var inputs = $('#editCarForm input');
 
@@ -196,8 +175,37 @@
             $('#carInfo').removeClass('hidden');
         }
 
+        function onCarEdit(data) {
+            var licensePlate = data.licensePlate;
+            alert("New car with license plate " + licensePlate + " was edited");
+            $('#editCarForm').addClass('hidden');
+        }
+
+        function onCarEditError () {
+            alert("This car wasn't edited");
+        }
+
         function showAddForm() {
             $('.addForm').removeClass('hidden');
+            $('#carInfo').addClass('hidden');
+            $('#hiddenTable').addClass('hidden');
+        }
+
+        function onCarAdded(data) {
+            var licensePlate = data.licensePlate;
+            alert("New car with license plate " + licensePlate + " was added");
+            $('.addForm').addClass('hidden');
+            $('.addForm input').not($('#companyId')).val('');
+        }
+
+        function onCarAddedError () {
+            alert("This car already exists in data base");
+        }
+
+        function onCarDeleted(data) {
+            alert("Car was deleted");
+            $('#carInfo').addClass('hidden');
+            $('#hiddenTable').addClass('hidden');
         }
 
     </script>

@@ -31,7 +31,7 @@ namespace NorbitsChallenge.Dal
             using (var connection = new SqlConnection(connectionString))
             {
                 connection.Open();
-                using (var command = new SqlCommand {Connection = connection, CommandType = CommandType.Text})
+                using (var command = new SqlCommand { Connection = connection, CommandType = CommandType.Text })
                 {
                     command.CommandText = $"select * from car where companyId = {companyId} and licenseplate = '{licensePlate}'";
 
@@ -39,7 +39,7 @@ namespace NorbitsChallenge.Dal
                     {
                         if (reader.Read())
                         {
-                            result = (int) reader["tireCount"];
+                            result = (int)reader["tireCount"];
                         }
                     }
                 }
